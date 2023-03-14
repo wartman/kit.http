@@ -164,7 +164,7 @@ class UrlObject {
 
 @:forward(get, exists, iterator, keyValueIterator)
 abstract UrlQuery(Map<String, String>) {
-	public static function parse(query:String):UrlQuery {
+	@:from public static function parse(query:String):UrlQuery {
 		var params:Map<String, String> = [];
 		var parts = query.split('&');
 

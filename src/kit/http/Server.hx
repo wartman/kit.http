@@ -1,13 +1,13 @@
 package kit.http;
 
-class Server {
-	var handler:Handler;
+import haxe.Exception;
 
-	public function new(handler) {
-		this.handler = handler;
-	}
+enum ServerStatus {
+	Failed(e:Exception);
+	Running(close:(handle:(status:Bool) -> Void) -> Void);
+	Closed;
+}
 
-	public function serve(adaptor:ServerAdaptor) {
-		return adaptor.serve(handler);
-	}
+interface Server {
+	public function serve(handler:Handler):Future<ServerStatus>;
 }

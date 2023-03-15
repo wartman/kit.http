@@ -1,9 +1,9 @@
-package kit.http.adaptor;
+package kit.http.server;
 
 import haxe.io.Bytes;
 import js.lib.Uint8Array;
 import js.node.http.*;
-import kit.http.ServerAdaptor;
+import kit.http.Server;
 
 using kit.Sugar;
 
@@ -31,7 +31,7 @@ abstract ServerInit(ServerInitObject) from ServerInitObject to ServerInitObject 
 	}
 }
 
-class NodeAdaptor implements ServerAdaptor {
+class NodeServer implements Server {
 	final init:ServerInitObject;
 
 	public function new(init:ServerInit) {

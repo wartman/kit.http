@@ -1,6 +1,6 @@
 import haxe.io.Bytes;
 import kit.http.*;
-import kit.http.adaptor.NodeAdaptor;
+import kit.http.server.NodeServer;
 
 using Kit;
 using StringTools;
@@ -12,8 +12,8 @@ function main() {
 		activate(res);
 	})).into(new HelloWorldMiddleware());
 
-	var server = new Server(handler);
-	server.serve(new NodeAdaptor(8080)).handle(mode -> switch mode {
+	var server = new NodeServer(8080);
+	server.serve(handler).handle(mode -> switch mode {
 		case Failed(e): trace(e);
 		case Running(close): // todo
 		case Closed: trace('closed');

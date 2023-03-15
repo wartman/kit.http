@@ -77,7 +77,7 @@ class NodeAdaptor implements ServerAdaptor {
 				});
 
 				req.on('end', () -> {
-					handler.handle(switch body.toMaybe() {
+					handler.process(switch body.toMaybe() {
 						case None:
 							request;
 						case Some(value):

@@ -25,7 +25,7 @@ class HelloWorldMiddleware implements Middleware {
 
 	public function apply(handler:Handler):Handler {
 		return new Handler(request -> {
-			if (!request.url.path.startsWith('/hello')) return handler.handle(request);
+			if (!request.url.path.startsWith('/hello')) return handler.process(request);
 			var headers = new Headers([{name: ContentType, value: 'text/html'}]);
 			var res = new Response(OK, headers, Bytes.ofString('<p>Hello ${request.url}</p>'));
 			return Future.immediate(res);

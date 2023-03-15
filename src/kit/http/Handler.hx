@@ -18,17 +18,17 @@ abstract Handler(HandlerObject) from HandlerObject {
 }
 
 interface HandlerObject {
-	public function handle(request:Request):Future<Response>;
+	public function process(request:Request):Future<Response>;
 }
 
 class SimpleHandler implements HandlerObject {
-	final handler:(request:Request) -> Future<Response>;
+	final handle:(request:Request) -> Future<Response>;
 
-	public function new(handler) {
-		this.handler = handler;
+	public function new(handle) {
+		this.handle = handle;
 	}
 
-	public function handle(request:Request):Future<Response> {
-		return handler(request);
+	public function process(request:Request):Future<Response> {
+		return handle(request);
 	}
 }

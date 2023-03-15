@@ -25,7 +25,7 @@ class Request extends Message<Request> {
 		return new Request(method, url, headers.with(header), body.unwrap());
 	}
 
-	public function withBody(body:Bytes):Request {
+	public function withBody(body:Body):Request {
 		return new Request(method, url, headers, body);
 	}
 

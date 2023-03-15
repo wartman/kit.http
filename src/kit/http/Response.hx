@@ -1,11 +1,9 @@
 package kit.http;
 
-import haxe.io.Bytes;
-
 class Response extends Message<Response> {
 	public final status:StatusCode;
 
-	public function new(status, ?headers, body:Bytes) {
+	public function new(status, ?headers, body:Body) {
 		super(headers, body);
 		this.status = status;
 	}
@@ -14,7 +12,7 @@ class Response extends Message<Response> {
 		return new Response(status, headers.with(header), body.unwrap());
 	}
 
-	public function withBody(body:Bytes):Response {
+	public function withBody(body:Body):Response {
 		return new Response(status, headers, body);
 	}
 }

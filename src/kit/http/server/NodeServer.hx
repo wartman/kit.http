@@ -66,7 +66,7 @@ class NodeServer implements Server {
 					case Delete: Delete;
 					default: Get;
 				};
-				var headers = new Headers([for (key => value in req.headers) {name: key, value: value}]);
+				var headers:Headers = [for (key => value in req.headers) {name: key, value: value}];
 				var request = new Request(method, req.url, headers);
 				var body = null;
 
@@ -93,6 +93,7 @@ class NodeServer implements Server {
 						}
 						res.writeHead(response.status);
 						response.body.ifExtract(Some(body), {
+							var body = body.toBytes();
 							var buf = new Uint8Array(body.getData(), 0, body.length);
 							res.write(buf);
 						});

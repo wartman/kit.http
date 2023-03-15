@@ -3,40 +3,40 @@ package kit.http;
 import haxe.Exception;
 
 using Lambda;
+using kit.Sugar;
 
-class Headers {
+@:forward(iterator, keyValueIterator)
+abstract Headers(Array<HeaderField>) from Array<HeaderField> {
 	public static function parse(value:String):Result<Headers> {
 		return Failure(new Exception('Not implemented yet'));
 	}
 
-	final fields:Array<HeaderField>;
+	public function new(...fields) {
+		this = fields.toArray();
+	}
 
-	public function new(fields) {
-		this.fields = fields;
+	public function find(name:HeaderName):Maybe<HeaderField> {
+		return this.find(header -> header.name == name).toMaybe();
 	}
 
 	public function get(name:HeaderName):Array<HeaderField> {
-		return [for (field in fields) if (field.name == name) field];
+		return [for (field in this) if (field.name == name) field];
 	}
 
-	public function has(name:HeaderName) {
-		return fields.exists(field -> field.name == name);
+	public inline function has(name:HeaderName) {
+		return this.exists(field -> field.name == name);
 	}
 
-	public function with(header:HeaderField) {
-		return new Headers(fields.concat([header]));
+	public inline function with(...headers:HeaderField):Headers {
+		return this.concat(headers.toArray());
 	}
 
-	public function without(name:HeaderName) {
-		return new Headers(fields.filter(field -> field.name != name));
+	public inline function without(name:HeaderName):Headers {
+		return this.filter(field -> field.name != name);
 	}
 
-	public function clone() {
-		return new Headers(fields.copy());
-	}
-
-	public function iterator() {
-		return fields.iterator();
+	public inline function clone():Headers {
+		return this.copy();
 	}
 
 	public function toString() {

@@ -1,4 +1,3 @@
-import haxe.io.Bytes;
 import kit.http.*;
 import kit.http.server.NodeServer;
 

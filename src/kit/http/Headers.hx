@@ -7,8 +7,8 @@ using kit.Sugar;
 
 @:forward(iterator, keyValueIterator)
 abstract Headers(Array<HeaderField>) from Array<HeaderField> {
-	public static function parse(value:String):Result<Headers> {
-		return Failure(new Exception('Not implemented yet'));
+	public static function parse(value:String):Result<Headers, Error> {
+		return Error(new Error(MethodNotAllowed, 'Not implemented yet'));
 	}
 
 	public function new(...fields) {

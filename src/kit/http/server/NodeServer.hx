@@ -68,7 +68,7 @@ class NodeServer implements Server {
 				};
 				var headers:Headers = [for (key => value in req.headers) {name: key, value: value}];
 				var request = new Request(method, req.url, headers);
-				var body = null;
+				var body:Null<String> = null;
 
 				req.on('data', (chunk) -> {
 					if (body == null) body = '';
@@ -101,6 +101,6 @@ class NodeServer implements Server {
 					});
 				});
 			});
-		});
+		}).eager();
 	}
 }

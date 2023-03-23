@@ -1,0 +1,13 @@
+{
+  "name": "kit.http",
+  "description": "Basic HTTP for Haxe",
+  "classPath": "src/",
+  "contributors": [ "wartman" ],
+  "dependencies": {
+    "kit": "0.0.1-alpha.1"
+  },
+  "url": "https://github.com/wartman/kit.http",
+  "license": "MIT",
+  "releasenote": "Pre-alpha",
+  "version": "0.0.1-alpha.1"
+}

@@ -1,8 +1,7 @@
 package kit.http;
 
-import haxe.io.Bytes;
-
-// @todo: how to handle credentials and stuff?
+// @todo: How do we handle credentials and stuff?
+// @todo: How do we handle uploaded files?
 class Request extends Message<Request> {
 	public static function ofUrl(url:Url) {
 		return new Request(Get, url);

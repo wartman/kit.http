@@ -1,10 +1,9 @@
 package kit.http;
 
-import haxe.Exception;
-
 using Lambda;
 using kit.Sugar;
 
+// @todo: Do we take a page from tink and stick the URL and HTTP method here?
 @:forward(iterator, keyValueIterator)
 abstract Headers(Array<HeaderField>) from Array<HeaderField> {
 	public static function parse(value:String):Result<Headers, Error> {

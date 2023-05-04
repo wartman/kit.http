@@ -1,7 +1,6 @@
 package kit.http;
 
-import haxe.io.Bytes;
-
+// @todo: We need to handle body better.
 abstract class Message<R:Message<R>> {
 	public final headers:Headers;
 	public final body:Maybe<Body>;

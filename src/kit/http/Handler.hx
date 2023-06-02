@@ -10,9 +10,9 @@ abstract Handler(HandlerObject) from HandlerObject {
 		this = new SimpleHandler(handle);
 	}
 
-	public inline function into(...middlewares:Middleware):Handler {
+	public inline function into(...middleware:Middleware):Handler {
 		var handler:Handler = this;
-		for (mw in middlewares) handler = mw.apply(handler);
+		for (mw in middleware) handler = mw.apply(handler);
 		return handler;
 	}
 }

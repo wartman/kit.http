@@ -19,7 +19,7 @@ class BrowserClient implements Client {
 		this.options = options ?? {};
 	}
 
-	public function request(req:Request):Task<Response, Error> {
+	public function request(req:Request):Task<Response> {
 		return switch req.url.scheme {
 			case 'http' | 'https':
 				var headers = new js.html.Headers();

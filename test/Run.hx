@@ -1,5 +1,5 @@
 import kit.http.*;
-import kit.http.server.NodeServer;
+import kit.http.server.*;
 
 using Kit;
 using StringTools;
@@ -11,12 +11,15 @@ function main() {
 		activate(res);
 	})).into(new HelloWorldMiddleware());
 
+	#if nodejs
 	var server = new NodeServer(8080);
 	server.serve(handler).handle(mode -> switch mode {
 		case Failed(e): trace(e);
 		case Running(close): // todo
 		case Closed: trace('closed');
 	});
+	#elseif php
+	#end
 }
 
 class HelloWorldMiddleware implements Middleware {

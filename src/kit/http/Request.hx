@@ -1,6 +1,5 @@
 package kit.http;
 
-// @todo: How do we handle credentials and stuff?
 // @todo: How do we handle uploaded files?
 class Request extends Message<Request> {
 	public static function ofUrl(url:Url) {

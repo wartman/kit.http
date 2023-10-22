@@ -13,24 +13,26 @@ function main() {
 
 	#if nodejs
 	var server = new NodeServer(8080);
+	#elseif php
+	var server = new PhpServer();
+	#end
+
 	server.serve(handler).handle(mode -> switch mode {
 		case Failed(e): trace(e);
 		case Running(close): // todo
 		case Closed: trace('closed');
 	});
-	#elseif php
-	#end
 }
 
 class HelloWorldMiddleware implements Middleware {
 	public function new() {}
 
 	public function apply(handler:Handler):Handler {
-		return new Handler(request -> {
+		return request -> {
 			if (!request.url.path.startsWith('/hello')) return handler.process(request);
 			var headers = new Headers(new HeaderField(ContentType, 'text/html'));
 			var res = new Response(OK, headers, '<p>Hello ${request.url}</p>');
 			return Future.immediate(res);
-		});
+		};
 	}
 }

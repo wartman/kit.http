@@ -1,3 +1,3 @@
-# @install: lix --silent download "gh://github.com/wartman/kit#d2dc3a4dfd2ceb470b768347b163336c5b4e532d" into kit/0.0.1-alpha.1/github/d2dc3a4dfd2ceb470b768347b163336c5b4e532d
--cp ${HAXE_LIBCACHE}/kit/0.0.1-alpha.1/github/d2dc3a4dfd2ceb470b768347b163336c5b4e532d/src/
+# @install: lix --silent download "gh://github.com/wartman/kit#1717c97359d37c69318e5eba981a793d8ab06be7" into kit/0.0.1-alpha.1/github/1717c97359d37c69318e5eba981a793d8ab06be7
+-cp ${HAXE_LIBCACHE}/kit/0.0.1-alpha.1/github/1717c97359d37c69318e5eba981a793d8ab06be7/src/
 -D kit=0.0.1-alpha.1

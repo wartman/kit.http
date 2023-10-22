@@ -1,9 +1,9 @@
 package kit.http.client;
 
 import haxe.io.Bytes;
+import js.Browser;
 import js.lib.HaxeIterator;
 import js.lib.Int8Array;
-import js.Browser;
 
 typedef BrowserClientOptions = {
 	public final ?cache:js.html.RequestCache;

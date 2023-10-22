@@ -26,7 +26,9 @@ class PhpServer implements Server {
 					case None:
 				}
 
-				activate(Running(_ -> null));
+				activate(Running(_ -> {
+					throw 'Cannot shut down PHP servers this way?';
+				}));
 			});
 		});
 	}

@@ -1,5 +1,7 @@
 package kit.http;
 
+import kit.Error;
+
 enum abstract StatusCode(Int) from Int to Int {
 	final Continue = 100;
 	final SwitchingProtocols = 101;
@@ -62,4 +64,47 @@ enum abstract StatusCode(Int) from Int to Int {
 	final LoopDetected = 508;
 	final NotExtended = 510;
 	final NetworkAuthenticationRequired = 511;
+
+	@:from public static function fromErrorCode(code:ErrorCode):StatusCode {
+		return switch code {
+			case ErrorCode.BadRequest: BadRequest;
+			case ErrorCode.Unauthorized: Unauthorized;
+			case ErrorCode.Forbidden: Forbidden;
+			case ErrorCode.NotFound: NotFound;
+			case ErrorCode.MethodNotAllowed: MethodNotAllowed;
+			case ErrorCode.NotAcceptable: NotAcceptable;
+			case ErrorCode.RequestTimeout: RequestTimeout;
+			case ErrorCode.Conflict: Conflict;
+			case ErrorCode.Gone: Gone;
+			case ErrorCode.UnsupportedMediaType: UnsupportedMediaType;
+			case ErrorCode.ExpectationFailed: ExpectationFailed;
+			case ErrorCode.InternalError: InternalServerError;
+			case ErrorCode.NotImplemented: NotImplemented;
+			case ErrorCode.ServiceUnavailable: ServiceUnavailable;
+			case ErrorCode.InsufficientStorage: InsufficientStorage;
+			case ErrorCode.LoopDetected: LoopDetected;
+		}
+	}
+
+	@:to public function toErrorCode():ErrorCode {
+		return switch this {
+			case BadRequest: ErrorCode.BadRequest;
+			case Unauthorized: ErrorCode.Unauthorized;
+			case Forbidden: ErrorCode.Forbidden;
+			case NotFound: ErrorCode.NotFound;
+			case MethodNotAllowed: ErrorCode.MethodNotAllowed;
+			case NotAcceptable: ErrorCode.NotAcceptable;
+			case RequestTimeout: ErrorCode.RequestTimeout;
+			case Conflict: ErrorCode.Conflict;
+			case Gone: ErrorCode.Gone;
+			case UnsupportedMediaType: ErrorCode.UnsupportedMediaType;
+			case ExpectationFailed: ErrorCode.ExpectationFailed;
+			case InternalServerError: ErrorCode.InternalError;
+			case NotImplemented: ErrorCode.NotImplemented;
+			case ServiceUnavailable: ErrorCode.ServiceUnavailable;
+			case InsufficientStorage: ErrorCode.InsufficientStorage;
+			case LoopDetected: ErrorCode.LoopDetected;
+			default: InternalError;
+		}
+	}
 }

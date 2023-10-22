@@ -3,9 +3,9 @@
 
 -lib kit
 -lib kit.spec
-# -lib hxnodejs
+-lib hxnodejs
 
 -main Run
 
--php dist/php
-# -js dist/test.js
+# -php dist/php
+-js dist/test.js

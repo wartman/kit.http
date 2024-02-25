@@ -21,7 +21,8 @@ class StdClient implements Client {
 					};
 					http.onError = msg -> {
 						status = status == OK ? InternalServerError : status;
-						activate(Ok(new Response(status, getHeaders(), msg)));
+						var response = new Response(status, getHeaders(), msg);
+						activate(Ok(response));
 					};
 					http.request(req.method == Post);
 				});

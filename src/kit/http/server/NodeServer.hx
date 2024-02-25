@@ -5,6 +5,7 @@ import js.lib.Uint8Array;
 import js.node.http.*;
 import kit.http.Server;
 
+using Kit;
 using kit.Sugar;
 
 private enum ServerInitObject {
@@ -68,38 +69,42 @@ class NodeServer implements Server {
 				};
 				var headers:Headers = [for (key => value in req.headers) {name: key, value: value}];
 				var request = new Request(method, req.url, headers);
-				var body:Null<String> = null;
 
-				req.on('data', (chunk) -> {
-					if (body == null) body = '';
-					// Note: implicit conversion to string being done here.
-					body += '' + chunk;
-				});
+				// @todo: Handle the upload stream better
+				Stream.ofNodeReadable(req)
+					.reduce(request, (request, chunk) -> request.withBody(request.body.or(() -> Body.empty()).with(Bytes.ofString('' + chunk))))
+					.recover(_ -> Future.immediate(new Request(method, req.url, headers))) // @todo: actually handle this
+					.handle(request -> {
+						handler.process(request).handle(response -> {
+							var headers:Map<String, Array<String>> = [];
+							for (header in response.headers) {
+								if (!headers.exists(header.name)) headers.set(header.name, []);
+								headers.get(header.name).push(header.value);
+							}
+							for (name => values in headers) {
+								res.setHeader(name, values);
+							}
+							res.writeHead(response.status);
 
-				req.on('end', () -> {
-					handler.process(switch body.toMaybe() {
-						case None:
-							request;
-						case Some(value):
-							request.withBody(Bytes.ofString(value));
-					}).handle(response -> {
-						var headers:Map<String, Array<String>> = [];
-						for (header in response.headers) {
-							if (!headers.exists(header.name)) headers.set(header.name, []);
-							headers.get(header.name).push(header.value);
-						}
-						for (name => values in headers) {
-							res.setHeader(name, values);
-						}
-						res.writeHead(response.status);
-						response.body.ifExtract(Some(body), {
-							var body = body.toBytes();
-							var buf = new Uint8Array(body.getData(), 0, body.length);
-							res.write(buf);
+							switch response.body {
+								case None:
+									res.end();
+								case Some(body):
+									body.each(item -> {
+										var buf = new Uint8Array(item.getData(), 0, item.length);
+										res.write(buf);
+									}).handle(result -> switch result {
+										case Depleted: res.end();
+										case Errored(error):
+											// @todo: handle error?
+											res.end();
+										default:
+											// @todo: Send an error?
+											res.end();
+									});
+							}
 						});
-						res.end();
 					});
-				});
 			});
 		}).eager();
 	}

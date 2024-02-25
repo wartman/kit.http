@@ -21,8 +21,7 @@ class PhpServer implements Server {
 				// @todo: pipe output to a stream?
 				switch response.body {
 					case Some(body):
-						// @todo: This is a hack
-						Global.echo(body.toBytes().toString());
+
 					case None:
 				}
 
@@ -39,7 +38,7 @@ private function getRequestFromSuperGlobal():Request {
 	var url:String = SuperGlobal._SERVER['REQUEST_URI'];
 	var request = new Request(method, url, getHeadersFromSuperGlobal());
 
-	// @todo: parse body! we really need some kind of stream implementation.
+	// @todo: parse body into a stream!
 
 	return request;
 }

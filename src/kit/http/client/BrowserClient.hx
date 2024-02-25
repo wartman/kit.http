@@ -1,5 +1,6 @@
 package kit.http.client;
 
+import haxe.io.BytesBuffer;
 import haxe.io.Bytes;
 import js.Browser;
 import js.lib.HaxeIterator;
@@ -27,24 +28,27 @@ class BrowserClient implements Client {
 					headers.append(header.name, header.value);
 				}
 
-				return Task.ofJsPromise(Browser.self.fetch(req.url, {
-					cache: options.cache,
-					credentials: options.credentials,
-					mode: options.mode,
-					referrerPolicy: options.referrerPolicy,
-					body: req.body.map(body -> new Int8Array(body.toBytes().getData())).unwrap(),
-					headers: headers,
-					method: req.method
-				}).then(res -> {
-					var headers = [
-						for (entry in new HaxeIterator(res.headers.entries()))
-							new HeaderField(entry[0], entry[1])
-					];
-					res.arrayBuffer().then(data -> new Response(res.status, headers, switch data {
-						case null: null;
-						case data: new Body(Bytes.ofData(data));
+				req.body.or(Body.empty()).intoBuffer().next(buf -> {
+					var body = buf.length == 0 ? null : new Int8Array(buf.getBytes().getData());
+					return Task.ofJsPromise(Browser.self.fetch(req.url, {
+						cache: options.cache,
+						credentials: options.credentials,
+						mode: options.mode,
+						referrerPolicy: options.referrerPolicy,
+						body: body,
+						headers: headers,
+						method: req.method
+					}).then(res -> {
+						var headers = [
+							for (entry in new HaxeIterator(res.headers.entries()))
+								new HeaderField(entry[0], entry[1])
+						];
+						res.arrayBuffer().then(data -> new Response(res.status, headers, switch data {
+							case null: null;
+							case data: new Body(Bytes.ofData(data));
+						}));
 					}));
-				}));
+				});
 			default:
 				new Error(BadRequest, 'Missing Scheme (expected http/https) in URL: ${req.url.toString()}');
 		}

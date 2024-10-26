@@ -2,7 +2,6 @@
 -cp test
 
 -lib kit
--lib kit.spec
 -lib hxnodejs
 
 -main Run

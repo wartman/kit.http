@@ -1,7 +1,5 @@
 package kit.http;
 
-import haxe.Exception;
-
 enum abstract Method(String) to String {
 	static public function parse(s:String):Result<Method, Error> {
 		return switch s.toUpperCase() {

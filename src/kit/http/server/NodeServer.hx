@@ -92,7 +92,7 @@ class NodeServer implements Server {
 							res.setHeader(name, values);
 						}
 						res.writeHead(response.status);
-						response.body.ifExtract(Some(body), {
+						response.body.extract(if (Some(body)) {
 							var body = body.toBytes();
 							var buf = new Uint8Array(body.getData(), 0, body.length);
 							res.write(buf);

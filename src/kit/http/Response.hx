@@ -8,6 +8,10 @@ class Response extends Message<Response> {
 		this.status = status;
 	}
 
+	public function withStatus(status:StatusCode) {
+		return new Response(status, headers, body.unwrap());
+	}
+
 	public function withHeader(header:HeaderField):Response {
 		return new Response(status, headers.with(header), body.unwrap());
 	}

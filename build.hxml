@@ -2,9 +2,5 @@
 -cp test
 
 -lib kit
--lib hxnodejs
 
--main Run
-
-# -php dist/php
--js dist/test.js
+--run Run

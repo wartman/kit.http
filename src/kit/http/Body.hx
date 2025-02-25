@@ -20,4 +20,8 @@ abstract Body(Bytes) from Bytes {
 	@:to public inline function toBytes():Bytes {
 		return this;
 	}
+
+	@:to public inline function toString():String {
+		return this.toString();
+	}
 }

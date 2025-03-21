@@ -23,7 +23,7 @@ class BrowserClient implements Client {
 		return switch req.url.scheme {
 			case 'http' | 'https':
 				var headers = new js.html.Headers();
-				for (header in req.headers) {
+				for (header in req.getHeaders()) {
 					headers.append(header.name, header.value);
 				}
 
@@ -32,7 +32,12 @@ class BrowserClient implements Client {
 					credentials: options.credentials,
 					mode: options.mode,
 					referrerPolicy: options.referrerPolicy,
-					body: req.body.map(body -> new Int8Array(body.toBytes().getData())).unwrap(),
+					body: switch req.method {
+						case Get | Head | Options:
+							null;
+						default:
+							req.body.toBytes().map(bytes -> new Int8Array(bytes.getData())).unwrap();
+					},
 					headers: headers,
 					method: req.method
 				}).then(res -> {

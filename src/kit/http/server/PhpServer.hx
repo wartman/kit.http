@@ -52,7 +52,10 @@ private function getHeadersFromSuperGlobal():Headers {
 
 	var serverInfo = Lib.hashOfAssociativeArray(SuperGlobal._SERVER);
 	var headers = new Headers();
-	var add = (name, value) -> headers = headers.with(new HeaderField(name, value));
+
+	function add(name, value) {
+		headers = headers.with(new HeaderField(name, value));
+	}
 
 	for (name => value in serverInfo) {
 		var key = switch name {
@@ -62,18 +65,21 @@ private function getHeadersFromSuperGlobal():Headers {
 			case _ if (name.substr(0, 5) == "HTTP_"): name.substr(5).replace('_', '-');
 			case _: continue;
 		}
+
 		add(key, value);
 	}
 
-	if (serverInfo.exists('HTTP_AUTHORIZATION')) {
-		if (serverInfo.exists('REDIRECT_HTTP_AUTHORIZATION')) {
-			add('Authorization', serverInfo.get('REDIRECT_HTTP_AUTHORIZATION'));
-		} else if (serverInfo.exists('PHP_AUTH_USER')) {
-			var basic = serverInfo.exists('PHP_AUTH_PW') ? serverInfo.get('PHP_AUTH_PW') : '';
-			add('Authorization', 'Basic ' + haxe.crypto.Base64.encode(haxe.io.Bytes.ofString(serverInfo.get('PHP_AUTH_USER'))).toString() + ':$basic');
-		} else if (serverInfo.exists('PHP_AUTH_DIGEST')) {
-			add('Authorization', serverInfo.get('PHP_AUTH_DIGEST'));
-		}
+	if (!serverInfo.exists('HTTP_AUTHORIZATION')) {
+		return headers;
+	}
+
+	if (serverInfo.exists('REDIRECT_HTTP_AUTHORIZATION')) {
+		add('Authorization', serverInfo.get('REDIRECT_HTTP_AUTHORIZATION'));
+	} else if (serverInfo.exists('PHP_AUTH_USER')) {
+		var basic = serverInfo.exists('PHP_AUTH_PW') ? serverInfo.get('PHP_AUTH_PW') : '';
+		add('Authorization', 'Basic ' + haxe.crypto.Base64.encode(haxe.io.Bytes.ofString(serverInfo.get('PHP_AUTH_USER'))).toString() + ':$basic');
+	} else if (serverInfo.exists('PHP_AUTH_DIGEST')) {
+		add('Authorization', serverInfo.get('PHP_AUTH_DIGEST'));
 	}
 
 	return headers;

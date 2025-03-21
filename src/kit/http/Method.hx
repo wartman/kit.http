@@ -1,7 +1,7 @@
 package kit.http;
 
 enum abstract Method(String) to String {
-	static public function parse(s:String):Result<Method, Error> {
+	static public function parse(s:String):Result<Method> {
 		return switch s.toUpperCase() {
 			case 'GET': Ok(Get);
 			case 'HEAD': Ok(Head);
@@ -10,7 +10,7 @@ enum abstract Method(String) to String {
 			case 'PUT': Ok(Put);
 			case 'PATCH': Ok(Patch);
 			case 'DELETE': Ok(Delete);
-			case other: return Error(new Error(InternalError, 'Invalid result: $other'));
+			case other: return Error(new Error(NotAcceptable, 'Invalid result: $other'));
 		}
 	}
 

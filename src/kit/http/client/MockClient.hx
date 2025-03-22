@@ -1,31 +1,34 @@
 package kit.http.client;
 
+import kit.http.shared.MockConnection;
 import haxe.Timer;
-import kit.http.server.MockServer;
+
+typedef MockClientOptions = {
+	public final ?timeout:Int;
+}
 
 class MockClient implements Client {
-	final options:{
-		?timeout:Int
-	};
+	final connection:MockConnection;
+	final options:MockClientOptions;
 
-	public function new(?options) {
-		this.options = options ?? {timeout: 1000};
+	public function new(connection, ?options) {
+		this.connection = connection;
+		this.options = options;
 	}
 
 	public function request(request:Request):Task<Response> {
-		var context = MockServerContext.current();
 		return new Task(activate -> {
 			var link:Null<Cancellable> = null;
 			var timer = Timer.delay(() -> {
 				link?.cancel();
 				activate(Error(new Error(RequestTimeout, 'Request timed out.')));
-			}, options.timeout);
-			link = context.onResponse.addOnce(response -> {
+			}, options?.timeout ?? 1000);
+			link = connection.respond.addOnce(response -> {
 				timer.stop();
 				timer = null;
 				activate(Ok(response));
 			});
-			context.onRequest.dispatch(request);
+			connection.request.dispatch(request);
 		});
 	}
 }

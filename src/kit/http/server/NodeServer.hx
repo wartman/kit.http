@@ -69,6 +69,9 @@ class NodeServer implements Server {
 				var headers:Headers = [for (key => value in req.headers) {name: key, value: value}];
 				var body = new Body();
 
+				// @todo: Ideally we'll be using a stream here, but until that's ready we're just
+				// waiting until the entire body is ready for a response. This means this library is
+				// really not usable for any files that are remotely large.
 				req.on('data', (chunk) -> {
 					// Note: implicit conversion to string being done here.
 					body.write(chunk + '');
@@ -85,6 +88,8 @@ class NodeServer implements Server {
 							res.setHeader(name, values);
 						}
 						res.writeHead(response.status);
+						// @todo: Again, if we had a stream implementation we'd use it here. Instead
+						// we're just sending the whole dang thing for now.
 						response.body.toBytes().extract(if (Some(bytes)) {
 							var buf = new Uint8Array(bytes.getData(), 0, bytes.length);
 							res.write(buf);

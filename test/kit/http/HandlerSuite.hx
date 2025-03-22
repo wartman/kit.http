@@ -1,11 +1,12 @@
 package kit.http;
 
+import kit.http.shared.MockConnection;
 import kit.http.client.*;
 import kit.http.server.*;
 
 class HandlerSuite extends Suite {
-	function startServer(handler):Task<(handle:(status:Bool) -> Void) -> Void> {
-		var server = new MockServer(8080);
+	function startServer(connection, handler):Task<(handle:(status:Bool) -> Void) -> Void> {
+		var server = new MockServer(connection);
 		return server.serve(handler).map(status -> switch status {
 			case Failed(e): Error(new Error(InternalError, e.message));
 			case Closed: Error(new Error(InternalError, 'Server failed to start'));
@@ -15,8 +16,9 @@ class HandlerSuite extends Suite {
 
 	@:test(expects = 1, timeout = 100)
 	function handlerWorks() {
-		var client = new MockClient();
-		return startServer(request -> {
+		var connection = new MockConnection();
+		var client = new MockClient(connection);
+		return startServer(connection, request -> {
 			return Future.immediate(new Response(OK, [], 'Works'));
 		}).next(close -> {
 			client.request(new Request(Get, 'http://localhost:8080'))
@@ -27,7 +29,10 @@ class HandlerSuite extends Suite {
 						Assert.fail('No body was sent');
 					});
 				})
-				.always(() -> close(_ -> null));
+				.always(() -> {
+					close(_ -> null);
+					connection.cancel();
+				});
 		});
 	}
 }

@@ -1,6 +1,6 @@
 package kit.http.client;
 
-import kit.http.shared.MockConnection;
+import kit.http.server.MockServer;
 import haxe.Timer;
 
 typedef MockClientOptions = {
@@ -8,11 +8,11 @@ typedef MockClientOptions = {
 }
 
 class MockClient implements Client {
-	final connection:MockConnection;
+	final server:MockServer;
 	final options:MockClientOptions;
 
-	public function new(connection, ?options) {
-		this.connection = connection;
+	public function new(server, ?options) {
+		this.server = server;
 		this.options = options;
 	}
 
@@ -23,12 +23,11 @@ class MockClient implements Client {
 				link?.cancel();
 				activate(Error(new Error(RequestTimeout, 'Request timed out.')));
 			}, options?.timeout ?? 1000);
-			link = connection.respond.addOnce(response -> {
+			link = server.handleRequest(request).handle(response -> {
 				timer.stop();
 				timer = null;
 				activate(Ok(response));
 			});
-			connection.request.dispatch(request);
 		});
 	}
 }

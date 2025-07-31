@@ -7,13 +7,13 @@ import kit.http.Server;
 
 using kit.Sugar;
 
-private enum ServerInitObject {
+private enum ServerInitOptions {
 	Instance(server:js.node.net.Server);
 	Port(port:Int);
 	Url(url:Url);
 }
 
-abstract ServerInit(ServerInitObject) from ServerInitObject to ServerInitObject {
+abstract ServerInit(ServerInitOptions) from ServerInitOptions to ServerInitOptions {
 	@:from public static function ofInstance(server:js.node.net.Server):ServerInit {
 		return Instance(server);
 	}
@@ -32,7 +32,7 @@ abstract ServerInit(ServerInitObject) from ServerInitObject to ServerInitObject 
 }
 
 class NodeServer implements Server {
-	final init:ServerInitObject;
+	final init:ServerInitOptions;
 
 	public function new(init:ServerInit) {
 		this.init = init;
@@ -67,24 +67,20 @@ class NodeServer implements Server {
 					default: Get;
 				};
 				var headers:Headers = [for (key => value in req.headers) {name: key, value: value}];
-				var request = new Request(method, req.url, headers);
-				var body:Null<String> = null;
+				var body = new Body();
 
+				// @todo: Ideally we'll be using a stream here, but until that's ready we're just
+				// waiting until the entire body is ready for a response. This means this library is
+				// really not usable for any files that are remotely large.
 				req.on('data', (chunk) -> {
-					if (body == null) body = '';
 					// Note: implicit conversion to string being done here.
-					body += '' + chunk;
+					body.write(chunk + '');
 				});
 
 				req.on('end', () -> {
-					handler.process(switch body.toMaybe() {
-						case None:
-							request;
-						case Some(value):
-							request.withBody(Bytes.ofString(value));
-					}).handle(response -> {
+					handler.process(new Request(method, req.url, headers, body)).handle(response -> {
 						var headers:Map<String, Array<String>> = [];
-						for (header in response.headers) {
+						for (header in response.getHeaders()) {
 							if (!headers.exists(header.name)) headers.set(header.name, []);
 							headers.get(header.name).push(header.value);
 						}
@@ -92,9 +88,10 @@ class NodeServer implements Server {
 							res.setHeader(name, values);
 						}
 						res.writeHead(response.status);
-						response.body.extract(if (Some(body)) {
-							var body = body.toBytes();
-							var buf = new Uint8Array(body.getData(), 0, body.length);
+						// @todo: Again, if we had a stream implementation we'd use it here. Instead
+						// we're just sending the whole dang thing for now.
+						response.body.toBytes().extract(if (Some(bytes)) {
+							var buf = new Uint8Array(bytes.getData(), 0, bytes.length);
 							res.write(buf);
 						});
 						res.end();

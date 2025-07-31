@@ -7,41 +7,49 @@ using StringTools;
 
 // @todo: Not ready yet
 class PhpServer implements Server {
-	public function new() {}
+	final factory:PhpRequestFactory;
+
+	public function new(?factory:PhpRequestFactory) {
+		this.factory = factory ?? new PhpRequestFromSuperGlobals();
+	}
 
 	public function serve(handler:Handler):Future<ServerStatus> {
 		return new Future(activate -> {
-			handler.process(getRequestFromSuperGlobal()).handle(response -> {
+			handler.process(factory.createRequest()).handle(response -> {
 				Syntax.code('http_response_code({0})', response.status);
 
-				for (header in response.headers) {
+				for (header in response.getHeaders()) {
 					Global.header('${header.name}:${header.value}');
 				}
 
 				// @todo: pipe output to a stream?
-				switch response.body {
-					case Some(body):
-						// @todo: This is a hack
-						Global.echo(body.toBytes().toString());
-					case None:
-				}
+				// @todo: Echoing this is a hack
+				Global.echo(response.body.toString().or(''));
 
 				activate(Running(_ -> {
-					throw 'Cannot shut down PHP servers this way?';
+					throw 'Cannot shut down PHP servers this way';
 				}));
 			});
 		});
 	}
 }
 
-private function getRequestFromSuperGlobal():Request {
-	var method = Method.parse(SuperGlobal._SERVER['REQUEST_METHOD']).or(() -> Method.Get);
-	var url:String = SuperGlobal._SERVER['REQUEST_URI'];
-	var request = new Request(method, url, getHeadersFromSuperGlobal());
+interface PhpRequestFactory {
+	public function createRequest():Request;
+}
 
-	// @todo: parse body! we really need some kind of stream implementation.
+class PhpRequestFromSuperGlobals implements PhpRequestFactory {
+	public function new() {}
 
-	return request;
+	public function createRequest():Request {
+		var method = Method.parse(SuperGlobal._SERVER['REQUEST_METHOD']).or(() -> Method.Get);
+		var url:String = SuperGlobal._SERVER['REQUEST_URI'];
+		var request = new Request(method, url, getHeadersFromSuperGlobal());
+
+		// @todo: parse body! we really need some kind of stream implementation.
+
+		return request;
+	}
 }
 
 private function getHeadersFromSuperGlobal():Headers {
@@ -52,7 +60,10 @@ private function getHeadersFromSuperGlobal():Headers {
 
 	var serverInfo = Lib.hashOfAssociativeArray(SuperGlobal._SERVER);
 	var headers = new Headers();
-	var add = (name, value) -> headers = headers.with(new HeaderField(name, value));
+
+	function add(name, value) {
+		headers = headers.with(new HeaderField(name, value));
+	}
 
 	for (name => value in serverInfo) {
 		var key = switch name {
@@ -62,18 +73,21 @@ private function getHeadersFromSuperGlobal():Headers {
 			case _ if (name.substr(0, 5) == "HTTP_"): name.substr(5).replace('_', '-');
 			case _: continue;
 		}
+
 		add(key, value);
 	}
 
-	if (serverInfo.exists('HTTP_AUTHORIZATION')) {
-		if (serverInfo.exists('REDIRECT_HTTP_AUTHORIZATION')) {
-			add('Authorization', serverInfo.get('REDIRECT_HTTP_AUTHORIZATION'));
-		} else if (serverInfo.exists('PHP_AUTH_USER')) {
-			var basic = serverInfo.exists('PHP_AUTH_PW') ? serverInfo.get('PHP_AUTH_PW') : '';
-			add('Authorization', 'Basic ' + haxe.crypto.Base64.encode(haxe.io.Bytes.ofString(serverInfo.get('PHP_AUTH_USER'))).toString() + ':$basic');
-		} else if (serverInfo.exists('PHP_AUTH_DIGEST')) {
-			add('Authorization', serverInfo.get('PHP_AUTH_DIGEST'));
-		}
+	if (!serverInfo.exists('HTTP_AUTHORIZATION')) {
+		return headers;
+	}
+
+	if (serverInfo.exists('REDIRECT_HTTP_AUTHORIZATION')) {
+		add('Authorization', serverInfo.get('REDIRECT_HTTP_AUTHORIZATION'));
+	} else if (serverInfo.exists('PHP_AUTH_USER')) {
+		var basic = serverInfo.exists('PHP_AUTH_PW') ? serverInfo.get('PHP_AUTH_PW') : '';
+		add('Authorization', 'Basic ' + haxe.crypto.Base64.encode(haxe.io.Bytes.ofString(serverInfo.get('PHP_AUTH_USER'))).toString() + ':$basic');
+	} else if (serverInfo.exists('PHP_AUTH_DIGEST')) {
+		add('Authorization', serverInfo.get('PHP_AUTH_DIGEST'));
 	}
 
 	return headers;

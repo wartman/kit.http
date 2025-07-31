@@ -2,31 +2,24 @@ package kit.http.server;
 
 import kit.http.Server;
 
+@:allow(kit.http.client.MockClient)
 class MockServer implements Server {
-	final onRequest:Event<Request> = new Event<Request>();
-	final onResponse:Event<Response> = new Event<Response>();
+	var handler:Null<Handler> = null;
 
-	public function new(?watcher) {
-		if (watcher != null) onResponse.add(watcher);
-	}
+	final public function new() {}
 
-	public function request(request:Request) {
-		onRequest.dispatch(request);
-		return this;
-	}
-
-	public function watch(handler:(response:Response) -> Void):Cancellable {
-		return onResponse.add(handler);
+	private function handleRequest(request:Request):Future<Response> {
+		if (handler == null) {
+			return Future.immediate(new Response(Forbidden, [], 'Server stopped'));
+		}
+		return handler.process(request);
 	}
 
 	public function serve(handler:Handler):Future<ServerStatus> {
+		this.handler = handler;
 		return new Future(activate -> {
-			var link = onRequest.add(request -> {
-				handler.process(request).handle(response -> onResponse.dispatch(response));
-			});
-
 			activate(Running(finish -> {
-				link.cancel();
+				handler = null;
 				finish(true);
 			}));
 		});

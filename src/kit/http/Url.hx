@@ -19,10 +19,7 @@ abstract Url(UrlObject) from UrlObject {
 	}
 }
 
-// @todo: We're missing host and port (if we're being inspired by PSR-7),
-// but this is OK for now.
 class UrlObject {
-	// @todo: urlDecode?
 	public static function parse(url:String):UrlObject {
 		url = url.trim();
 
@@ -34,7 +31,7 @@ class UrlObject {
 				part;
 		}
 
-		var domain = switch url.indexOf('/') {
+		var host = switch url.indexOf('/') {
 			case -1:
 				switch url.indexOf('?') {
 					case -1:
@@ -46,10 +43,22 @@ class UrlObject {
 				url.substring(0, index);
 		}
 
-		if (domain.length == 0)
-			domain = null;
+		if (host.length == 0)
+			host = null;
 		else {
-			url = url.substr(domain.length);
+			url = url.substr(host.length);
+		}
+
+		var port = switch host?.indexOf(':') {
+			case null | -1:
+				null;
+			case index:
+				var port = host.substring(index + 1);
+				host = host.substring(0, index);
+				switch Std.parseInt(port) {
+					case null: null; // @todo: Throw?
+					case port: port;
+				}
 		}
 
 		var path = '';
@@ -86,49 +95,55 @@ class UrlObject {
 				UrlQuery.parse(part);
 		}
 
-		return new UrlObject(scheme, domain, path, fragment, query);
+		return new UrlObject(scheme, host, port, path, fragment, query);
 	}
 
 	public final scheme:Null<String>;
-	public final domain:Null<String>;
+	public final host:Null<String>;
+	public final port:Null<Int>;
 	public final path:String;
 	public final query:UrlQuery;
 	public final fragment:Null<String>;
 
-	public function new(scheme, domain, path, fragment, query) {
+	public function new(scheme, host, port, path, fragment, query) {
 		this.scheme = scheme;
-		this.domain = domain;
+		this.host = host;
+		this.port = port;
 		this.path = path;
 		this.fragment = fragment;
 		this.query = query;
 	}
 
 	public function withScheme(newScheme):Url {
-		return new UrlObject(newScheme, domain, path, fragment, query);
+		return new UrlObject(newScheme, host, port, path, fragment, query);
 	}
 
-	public function withDomain(newDomain):Url {
-		return new UrlObject(scheme, newDomain, path, fragment, query);
+	public function withHost(newHost):Url {
+		return new UrlObject(scheme, newHost, port, path, fragment, query);
+	}
+
+	public function withPort(newPort):Url {
+		return new UrlObject(scheme, host, newPort, path, fragment, query);
 	}
 
 	public function withPath(newPath):Url {
-		return new UrlObject(scheme, domain, newPath, fragment, query);
+		return new UrlObject(scheme, host, port, newPath, fragment, query);
 	}
 
 	public function withFragment(newFragment):Url {
-		return new UrlObject(scheme, domain, path, newFragment, query);
+		return new UrlObject(scheme, host, port, path, newFragment, query);
 	}
 
 	public function withoutQuery():Url {
-		return new UrlObject(scheme, domain, path, fragment, new UrlQuery([]));
+		return new UrlObject(scheme, host, port, path, fragment, new UrlQuery([]));
 	}
 
 	public function withQueryParam(key, value):Url {
-		return new UrlObject(scheme, domain, path, fragment, query.with(key, value));
+		return new UrlObject(scheme, host, port, path, fragment, query.with(key, value));
 	}
 
 	public function withoutQueryParam(key):Url {
-		return new UrlObject(scheme, domain, path, fragment, query.without(key));
+		return new UrlObject(scheme, host, port, path, fragment, query.without(key));
 	}
 
 	public function toString():String {
@@ -138,8 +153,12 @@ class UrlObject {
 			buffer.add('://');
 		}
 
-		if (domain != null) {
-			buffer.add(domain);
+		if (host != null) {
+			buffer.add(host);
+		}
+
+		if (port != null) {
+			buffer.add(':$port');
 		}
 
 		if (path.length > 0) {

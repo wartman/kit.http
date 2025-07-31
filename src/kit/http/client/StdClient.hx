@@ -9,9 +9,13 @@ class StdClient implements Client {
 		return switch req.url.scheme {
 			case 'http' | 'https':
 				new Task(activate -> {
-					var http = new Http('');
+					var http = new Http(req.url);
 					var status:StatusCode = OK;
-					var getHeaders = () -> new Headers(...[for (name => value in http.responseHeaders) new HeaderField(name, value)]);
+
+					function getHeaders() {
+						return new Headers(...[for (name => value in http.responseHeaders) new HeaderField(name, value)]);
+					}
+
 					http.onStatus = code -> {
 						status = code;
 					}
@@ -23,6 +27,11 @@ class StdClient implements Client {
 						status = status == OK ? InternalServerError : status;
 						activate(Ok(new Response(status, getHeaders(), msg)));
 					};
+
+					if (req.method == Post) {
+						req.body.toBytes().inspect(bytes -> http.setPostBytes(bytes));
+					}
+
 					http.request(req.method == Post);
 				});
 			default:

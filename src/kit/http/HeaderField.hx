@@ -2,7 +2,7 @@ package kit.http;
 
 @:forward
 abstract HeaderField(HeaderFieldObject) from HeaderFieldObject {
-	public inline function new(name, value:Any) {
+	public inline function new(name:HeaderName, value:Any) {
 		this = {name: name, value: Std.string(value)};
 	}
 }

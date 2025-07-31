@@ -1,0 +1,17 @@
+-cp src
+-cp test
+
+-lib kit
+-lib hxnodejs
+
+--debug
+
+-D message.reporting=pretty
+-D js-es=6
+-D analyzer-optimize
+
+-main Run
+
+-js dist/node/index.js
+
+-cmd node dist/node

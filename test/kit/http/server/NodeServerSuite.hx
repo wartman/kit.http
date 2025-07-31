@@ -18,7 +18,7 @@ class NodeServerSuite extends Suite {
 			return Future.immediate(new Response(OK, [
 				new HeaderField(ContentType, 'text/plain')
 			], 'Hello World'));
-		}).next(close -> {
+		}).then(close -> {
 			var client = new StdClient();
 			var request = new Request(Get, 'http://localhost:8080', []);
 			return client

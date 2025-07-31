@@ -1,0 +1,15 @@
+-cp src
+-cp test
+
+-lib kit
+
+--debug
+
+-D message.reporting=pretty
+-D analyzer-optimize
+
+-main Run
+
+-php dist/php
+
+-cmd php dist/php/index.php

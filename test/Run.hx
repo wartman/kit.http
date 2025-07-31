@@ -6,7 +6,7 @@ function main() {
 	Runner.fromDefaults('Kit Http')
 		.add(HandlerSuite)
 		.add(UrlSuite)
-		#if (hxnodejs)
+		#if (nodejs)
 			.add(kit.http.server.NodeServerSuite)
 		#end
 		.run();

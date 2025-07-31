@@ -18,7 +18,7 @@ class HandlerSuite extends Suite {
 		var client = new MockClient(server);
 		return startServer(server, request -> {
 			return Future.immediate(new Response(OK, [], 'Works'));
-		}).next(close -> {
+		}).then(close -> {
 			client.request(new Request(Get, 'http://localhost:8080'))
 				.inspect(response -> {
 					response.body.toString().extract(if (Some(value)) {

@@ -7,41 +7,49 @@ using StringTools;
 
 // @todo: Not ready yet
 class PhpServer implements Server {
-	public function new() {}
+	final factory:PhpRequestFactory;
+
+	public function new(?factory:PhpRequestFactory) {
+		this.factory = factory ?? new PhpRequestFromSuperGlobals();
+	}
 
 	public function serve(handler:Handler):Future<ServerStatus> {
 		return new Future(activate -> {
-			handler.process(getRequestFromSuperGlobal()).handle(response -> {
+			handler.process(factory.createRequest()).handle(response -> {
 				Syntax.code('http_response_code({0})', response.status);
 
-				for (header in response.headers) {
+				for (header in response.getHeaders()) {
 					Global.header('${header.name}:${header.value}');
 				}
 
 				// @todo: pipe output to a stream?
-				switch response.body {
-					case Some(body):
-						// @todo: This is a hack
-						Global.echo(body.toBytes().toString());
-					case None:
-				}
+				// @todo: Echoing this is a hack
+				Global.echo(response.body.toString().or(''));
 
 				activate(Running(_ -> {
-					throw 'Cannot shut down PHP servers this way?';
+					throw 'Cannot shut down PHP servers this way';
 				}));
 			});
 		});
 	}
 }
 
-private function getRequestFromSuperGlobal():Request {
-	var method = Method.parse(SuperGlobal._SERVER['REQUEST_METHOD']).or(() -> Method.Get);
-	var url:String = SuperGlobal._SERVER['REQUEST_URI'];
-	var request = new Request(method, url, getHeadersFromSuperGlobal());
+interface PhpRequestFactory {
+	public function createRequest():Request;
+}
 
-	// @todo: parse body! we really need some kind of stream implementation.
+class PhpRequestFromSuperGlobals implements PhpRequestFactory {
+	public function new() {}
 
-	return request;
+	public function createRequest():Request {
+		var method = Method.parse(SuperGlobal._SERVER['REQUEST_METHOD']).or(() -> Method.Get);
+		var url:String = SuperGlobal._SERVER['REQUEST_URI'];
+		var request = new Request(method, url, getHeadersFromSuperGlobal());
+
+		// @todo: parse body! we really need some kind of stream implementation.
+
+		return request;
+	}
 }
 
 private function getHeadersFromSuperGlobal():Headers {
